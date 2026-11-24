@@ -1,0 +1,32 @@
+{
+  "statement": {
+    "top": 0,
+    "bottom": 0.085,
+    "left": 0.077,
+    "right": 0.172
+  },
+  "word": {
+    "top": 0,
+    "bottom": 0.091,
+    "left": 0.076,
+    "right": 0.17
+  },
+  "figure": {
+    "top": 0.017,
+    "bottom": 0.11,
+    "left": 0.072,
+    "right": 0.177
+  },
+  "shout": {
+    "top": 0.038,
+    "bottom": 0.106,
+    "left": 0.072,
+    "right": 0.184
+  },
+  "unit": {
+    "top": 0,
+    "bottom": 0,
+    "left": 0,
+    "right": 0.138
+  }
+}

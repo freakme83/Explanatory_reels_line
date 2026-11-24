@@ -1,0 +1,12 @@
+node_modules/
+out/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+# Atıf gerektiren / CC0 olmayan sesler depoya girmez (kaynak kaydı KAYNAKLAR.md'de)
+audio/external/*
+!audio/external/KAYNAKLAR.md
+# sırlar
+.env
+.env.*

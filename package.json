@@ -1,0 +1,30 @@
+{
+  "name": "explanatory-reels-line",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Kod tabanlı editoryal açıklayıcı reels üretim hattı (Remotion + React + TypeScript)",
+  "scripts": {
+    "studio": "remotion studio",
+    "typecheck": "tsc --noEmit",
+    "audit": "tsx tools/audit.ts",
+    "why": "tsx tools/audit.ts",
+    "glyphs": "tsx tools/glyphs.ts",
+    "events": "tsx tools/events.ts",
+    "film": "bash tools/film.sh"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.546",
+    "@remotion/fonts": "4.0.546",
+    "@remotion/paths": "4.0.546",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "remotion": "4.0.546"
+  },
+  "devDependencies": {
+    "@types/pngjs": "6.0.5",
+    "@types/react": "18.3.12",
+    "pngjs": "7.0.0",
+    "tsx": "4.19.2",
+    "typescript": "5.6.3"
+  }
+}
