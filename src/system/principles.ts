@@ -60,6 +60,7 @@ export const forbidden = [
   'Gradyan, parlama (glow), kart kutuları',
   'Kıvrımlı dekoratif kahve buharı / duman',
   'Süzülme, nefes alma gibi amaçsız döngü hareketleri',
+  'Açıklayıcı dipnot / uyarı etiketi ("temsili", "şematik", "hipotez"): doğruluğu çizimin niteliği taşır',
 ] as const;
 
 const TEXT_KINDS: CueKind[] = ['statement', 'word', 'figure', 'shout'];

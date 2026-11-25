@@ -19,6 +19,9 @@ Neden böyle çalıştığımızın kaydı. Ne yapılacağı ve sırası: `AGENT
   (biçim değişimi, kahramanın taşınması, olayın kendisinin geçiş olması — Kavurma: çatlağın kadrajı yarması).
 - İtalik ölçülü: cümle ve sayılar düz; metin başına en çok bir italik kelime (denetlenir). İlk bakışta okunabilirlik.
 - Yapay zekâ klişelerinden kaçın; duyusal etkiyi renk, ölçek, kadraj, yüzey ve tempo kurar.
+- Ekrana bilimsel şerh düşülmez: "temsili", "şematik", "hipotez" gibi dipnot etiketleri yok. İzleyici bir
+  illüstrasyon izlediğini bilir; doğruluğu çizimin niteliği taşır (Kola+V60: moleküller hiç sabit durmaz, su kadrajın
+  çoğunluğudur). Etiket yalnızca görüntünün tek başına söyleyemediği bir bilgiyi veriyorsa kalır.
 
 ## 2. Hook ve kurgu
 

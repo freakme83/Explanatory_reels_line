@@ -10,7 +10,7 @@
 import React from 'react';
 import {AbsoluteFill, useCurrentFrame} from 'remotion';
 import {canvas, color, margin, type} from '../../system/tokens';
-import {ease, lerp, mix, prog, settle} from '../../system/motion';
+import {ease, lerp, mix, prog, settle, smoothstep} from '../../system/motion';
 import {rand, smoothClosed, smoothOpen, type P} from '../../system/organic';
 import {Aroma, Caffeine, Sugar, WaterField, palette, scatter, wiggle} from './molecules';
 
@@ -23,11 +23,16 @@ const Tag: React.FC<{x: number; y: number; children: React.ReactNode; opacity?: 
 
 /* ================= Sahne 4 · Dolu otobüs ================= */
 
-export const S4 = {seats: 0, door: 40, silence: 52, answer: 74, melt: 78, slip: 86, total: 180} as const;
+export const S4 = {seats: 0, door: 40, rush: 26, hit: 50, silence: 52, answer: 74, melt: 78, slip: 86, total: 180} as const;
+
+const DOOR_X = 885;
+const DOOR_SHUT = DOOR_X + 50; // kapalı kapının dış kenarı
+const HERO_R = 40;
+const HERO_Y = 900;
 
 const COLS = 3;
 const ROWS = 4;
-const SEAT0: P = [210, 640];
+const SEAT0: P = [190, 640];
 const SEAT_DX = 255;
 const SEAT_DY = 235;
 const SZ = 1.55; // koltuk ölçeği
@@ -51,22 +56,31 @@ const seatPath = (c: P, m: number, frame: number, seed: number) => {
 export const SceneBus: React.FC = () => {
   const f = useCurrentFrame();
   const melt = prog(f, S4.melt, 34, ease.move);
-  const door = prog(f, S4.door, 10, ease.snap);
+  const door = prog(f, S4.door, 9, ease.snap);
   const sugarSeats = Array.from({length: COLS * ROWS}, (_, i) => i);
   const free = scatter(12, [130, 560, 880, 1480], 'free4');
   const standing = scatter(10, [110, 560, 860, 1500], 'stand4');
   const caff = scatter(3, [140, 600, 860, 1450], 'caf4');
 
-  // kahve aroması: kapıya gelir, kapı yüzüne kapanır, "Kalır." ile içeri sızar
-  const arrive = settle(f, 22, true);
-  const bump = f >= S4.door + 8 && f < S4.door + 16 ? Math.sin(((f - S4.door - 8) / 8) * Math.PI) * -18 : 0;
+  // kahve aroması: kadraj dışından koşarak gelir, kapı burnunun dibinde kapanır, kapıya çarpar,
+  // ezilip geri seker ve kapıya yapışık bekler; "Kalır." ile içeri sızar
+  const rush = prog(f, S4.rush, S4.hit - S4.rush, ease.build);
+  const u = f - S4.hit;
+  const squash = u >= 0 ? 0.34 * Math.exp(-u / 4.5) * Math.cos(u * 0.75) : 0;
+  const sx = u >= 0 ? 1 - squash : 1 + 0.14 * rush; // koşarken hafif uzar, çarpınca yassılaşır
+  const sy = u >= 0 ? 1 + squash * 0.7 : 1 - 0.08 * rush;
+  const recoil = u >= 0 && u < 12 ? Math.sin((u / 12) * Math.PI) * 20 : 0;
+  const rest = DOOR_SHUT + HERO_R * sx + 2;
+  const outside: P = [u >= 0 ? rest + recoil : lerp(1150, DOOR_SHUT + HERO_R + 2, rush), HERO_Y];
   const slip = prog(f, S4.slip, 44, ease.move);
-  const outside: P = [lerp(1160, 1042, arrive) + bump, 900];
-  const path: P[] = [outside, [930, 960], [830, 1010], [700, 990], [600, 930]];
+  const path: P[] = [outside, [900, 915], [810, 880], [720, 850], [650, 840]];
   const k = slip * (path.length - 1);
   const i0 = Math.min(path.length - 2, Math.floor(k));
   const aroma: P = slip === 0 ? outside : [lerp(path[i0][0], path[i0 + 1][0], k - i0), lerp(path[i0][1], path[i0 + 1][1], k - i0)];
-  const [aw, ah] = wiggle(0.77, f, 2.5);
+  const [aw, ah] = u >= 0 ? wiggle(0.77, f, 2) : [0, 0];
+  // hız çizgileri (koşu) ve çarpma izleri (kapıya değdiği an); ikisi de işini bitirince çekilir
+  const speedOp = f < S4.hit ? rush : 1 - prog(f, S4.hit, 6);
+  const hitOp = u >= 0 ? 1 - prog(f, S4.hit + 10, 16) : 0;
 
   const shoutS = settle(f, S4.answer, true);
 
@@ -92,7 +106,7 @@ export const SceneBus: React.FC = () => {
 
         {/* kapı: iki kanat kapanır; erime anında kanatlar da çözülür */}
         {[-1, 1].map((side) => {
-          const x = 968 + side * lerp(62, 25, door);
+          const x = DOOR_X + side * lerp(62, 25, door);
           const op = 1 - melt;
           return (
             <g key={side} opacity={op}>
@@ -126,7 +140,27 @@ export const SceneBus: React.FC = () => {
         })}
 
         {/* kahve aroması (filmin küçük kahramanı) */}
-        <Aroma x={aroma[0] + aw} y={aroma[1] + ah} r={24} seed="hero-aroma" />
+        {speedOp > 0.01 && slip === 0
+          ? [-17, 0, 17].map((dy, j) => (
+              <line key={j} x1={aroma[0] + HERO_R + 14 + j * 6} y1={HERO_Y + dy} x2={aroma[0] + HERO_R + 58 + j * 14 - Math.abs(dy)} y2={HERO_Y + dy}
+                stroke={color.ink} strokeWidth={4} strokeLinecap="round" opacity={speedOp * (0.75 - j * 0.12)} />
+            ))
+          : null}
+        {hitOp > 0.01
+          ? [-78, -52, 52, 78].map((deg, j) => {
+              // kapıyla temas noktasından, kahramanın üstüne ve altına açılan kısa çarpma çizgileri
+              const a = (deg * Math.PI) / 180;
+              const r0 = HERO_R + 16;
+              const r1 = r0 + 24;
+              return (
+                <line key={j} x1={DOOR_SHUT + Math.cos(a) * r0} y1={HERO_Y + Math.sin(a) * r0} x2={DOOR_SHUT + Math.cos(a) * r1} y2={HERO_Y + Math.sin(a) * r1}
+                  stroke={color.ink} strokeWidth={4} strokeLinecap="round" opacity={hitOp} />
+              );
+            })
+          : null}
+        <g transform={`translate(${aroma[0] + aw} ${aroma[1] + ah}) scale(${sx} ${sy}) translate(${-(aroma[0] + aw)} ${-(aroma[1] + ah)})`}>
+          <Aroma x={aroma[0] + aw} y={aroma[1] + ah} r={HERO_R} seed="hero-aroma" />
+        </g>
       </svg>
 
       {f >= S4.answer ? (
@@ -135,7 +169,6 @@ export const SceneBus: React.FC = () => {
           Kalır.
         </div>
       ) : null}
-      <Tag x={margin} y={1640} opacity={0.55}>temsili</Tag>
     </AbsoluteFill>
   );
 };
@@ -175,14 +208,17 @@ const CELLS = (() => {
 })();
 
 type Flow = {y0: number; bend: number; speed: number; phase: number; seed: string};
-const aromaFlows: Flow[] = Array.from({length: 22}, (_, i) => ({
-  y0: 560 + (i / 22) * 900 + (rand(`af${i}`) - 0.5) * 30,
-  bend: (rand(`ab${i}`) - 0.5) * 160,
-  speed: 0.0055 + rand(`as${i}`) * 0.003,
+const aromaFlows: Flow[] = Array.from({length: 28}, (_, i) => ({
+  y0: 640 + (i / 28) * 560 + (rand(`af${i}`) - 0.5) * 26,
+  bend: (rand(`ab${i}`) - 0.5) * 220,
+  speed: 0.006 + rand(`as${i}`) * 0.003,
   phase: rand(`ap${i}`),
   seed: `aflow${i}`,
 }));
-const caffFlows: Flow[] = [0, 1].map((i) => ({y0: 1180 + i * 220, bend: (i - 0.5) * 60, speed: 0.0016, phase: 0.12 + i * 0.13, seed: `cflow${i}`}));
+const caffFlows: Flow[] = [{y0: 1385, bend: -30, speed: 0.0011, phase: 0, seed: 'cflow0'}];
+
+/** Parçacık sınırından çıkarken belirme (yarım kesik şekil yok): sınırın r kadar içinden itibaren görünür. */
+const outOf = (x: number, y: number, r: number) => smoothstep(-r * 0.6, r * 0.6 + 14, x - edgeX(y));
 
 const along = (fl: Flow, t: number): P => {
   const x0 = edgeX(fl.y0) - 60;
@@ -193,8 +229,8 @@ const along = (fl: Flow, t: number): P => {
 export const SceneGradient: React.FC = () => {
   const f = useCurrentFrame();
   const intro = prog(f, 0, 24, ease.set);
-  const sugar = scatter(12, [580, 500, 1010, 1520], 'sug5');
-  const colaCaff = scatter(4, [620, 560, 990, 1500], 'caf5');
+  const sugar = scatter(12, [580, 500, 1010, 1290], 'sug5');
+  const colaCaff = [{x: 720, y: 1335, s: 0.21}, {x: 852, y: 1418, s: 0.63}, {x: 978, y: 1342, s: 0.4}]; // kolada zaten var: alt bölgede, sakin
   const inside = scatter(24, [40, 500, 380, 1540], 'in5');
   const wall = mix(palette.particle, color.ink, 0.38);
 
@@ -204,9 +240,6 @@ export const SceneGradient: React.FC = () => {
         <defs>
           <clipPath id="particle5">
             <path d={PARTICLE_PATH} />
-          </clipPath>
-          <clipPath id="cola5">
-            <path d={`M ${W + 40} -40 L ${W + 40} ${H + 40} ${PARTICLE_PATH.replace(/^M/, 'L')}`} />
           </clipPath>
         </defs>
 
@@ -233,38 +266,35 @@ export const SceneGradient: React.FC = () => {
         {/* kola: şeker kalabalığı ve koladaki mevcut kafein */}
         {sugar.map((s, i) => {
           const [wx, wy] = wiggle(s.s, f, 3);
-          return <Sugar key={i} x={s.x + wx} y={s.y + wy} r={30} rot={s.s * 4} />;
+          return <Sugar key={i} x={s.x + wx} y={s.y + wy} r={27} rot={s.s * 4} />;
         })}
         {colaCaff.map((s, i) => {
           const [wx, wy] = wiggle(s.s + 0.2, f, 3);
-          return <Caffeine key={`cc${i}`} x={s.x + wx} y={s.y + wy} r={22} rot={s.s * 2} />;
+          return <Caffeine key={`cc${i}`} x={s.x + wx} y={s.y + wy} r={19} rot={s.s * 2} />;
         })}
 
         {/* akışlar: hızlı ve bol (kahveye özgü bileşikler) · yavaş ve seyrek (kafein) */}
-        <g clipPath="url(#cola5)" opacity={intro}>
+        <g opacity={intro}>
           {aromaFlows.map((fl, i) => {
             const t = (f * fl.speed + fl.phase) % 1;
             const [x, y] = along(fl, t);
-            const trail = [0.035, 0.07, 0.105, 0.14].map((d) => along(fl, Math.max(0, t - d)));
+            const trail = [0.03, 0.06, 0.09, 0.12, 0.15].map((d) => along(fl, Math.max(0, t - d)));
             return (
               <g key={i}>
                 {trail.map(([tx, ty], j) => (
-                  <circle key={j} cx={tx} cy={ty} r={4.5 - j} fill={color.ink} opacity={0.4 - j * 0.08} />
+                  <circle key={j} cx={tx} cy={ty} r={6 - j} fill={color.ink} opacity={(0.6 - j * 0.1) * outOf(tx, ty, 0)} />
                 ))}
-                <Aroma x={x} y={y} r={16} seed={fl.seed} />
+                <Aroma x={x} y={y} r={21} seed={fl.seed} opacity={outOf(x, y, 21)} />
               </g>
             );
           })}
           {caffFlows.map((fl, i) => {
-            const t = (f * fl.speed + fl.phase) % 0.45;
+            const t = (f * fl.speed + fl.phase) % 0.4;
             const [x, y] = along(fl, t);
-            const trail = [0.02, 0.04].map((d) => along(fl, Math.max(0, t - d)));
             return (
               <g key={i}>
-                {trail.map(([tx, ty], j) => (
-                  <circle key={j} cx={tx} cy={ty} r={4 - j} fill={color.ink} opacity={0.35 - j * 0.1} />
-                ))}
-                <Caffeine x={x} y={y} r={22} rot={0.4 + i} />
+                <circle cx={along(fl, Math.max(0, t - 0.025))[0]} cy={along(fl, Math.max(0, t - 0.025))[1]} r={3} fill={color.ink} opacity={0.3 * outOf(x, y, 0)} />
+                <Caffeine x={x} y={y} r={19} rot={0.4 + i} opacity={outOf(x, y, 19)} />
               </g>
             );
           })}
@@ -273,8 +303,7 @@ export const SceneGradient: React.FC = () => {
 
       <Tag x={margin} y={420} opacity={intro} light>kahve</Tag>
       <Tag x={W - margin - 70} y={420} opacity={intro}>kola</Tag>
-      <Tag x={540} y={1470} opacity={intro}>kafein · kolada da var</Tag>
-      <Tag x={W - margin - 110} y={1660} opacity={0.55 * intro}>temsili</Tag>
+      <Tag x={560} y={1462} opacity={intro}>kafein · kolada da var</Tag>
     </AbsoluteFill>
   );
 };

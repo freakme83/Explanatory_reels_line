@@ -2,7 +2,7 @@
  * KOLA + V60 — molekül dili (filme özgü)
  *
  * Moleküller hiçbir zaman sabit yuvada durmaz: her biri tohumlu, kare-saf bir titreşimle kıpırdar.
- * Biçimler kimyasal yapıyı birebir çizmez, aileyi tanıtır (temsili):
+ * Biçimler kimyasal yapıyı birebir çizmez, aileyi tanıtır (ekranda dipnot yok; bunu çizimin dili anlatır):
  *   su       küçük soluk çizgi (kadrajın çoğunluğu)
  *   şeker    yuvarlatılmış altıgen halka (krem dolgu)
  *   kafein   kaynaşmış altıgen + beşgen (soluk kahve)
