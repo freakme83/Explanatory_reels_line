@@ -79,6 +79,7 @@ npm run audit -- <film>                # işaret listesi denetimi
 npm run why -- <film> <kare>           # o karede ne var ve neden
 npm run glyphs -- <film>               # gerçek harf sınırları ölçümü + satır sığma kontrolü
 npm run film -- <film> [goruntu|ses|hepsi]   # sessiz görüntü / ses miksi / ikisi → out/<film>/<film>.mp4
+npm run srt -- <film>                  # ayrı altyazı (SRT), dış ses satırlarından → out/<film>/<film>.srt
 $PYTHON tools/audio/hizala.py kayit.mp3 metin.txt        # modelsiz dış ses hizalaması
 $PYTHON tools/audio/ses_incele.py sayfa.png "audio/library/**/*.ogg"   # efekt ön eleme
 ```

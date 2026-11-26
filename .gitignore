@@ -10,3 +10,6 @@ audio/external/*
 # sırlar
 .env
 .env.*
+# Üçüncü taraf görüntüler ve kişisel ses klonuyla üretilmiş dış sesler depoya girmez (bkz. film README'si)
+public/external/*
+audio/vo/kola-v60*

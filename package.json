@@ -10,7 +10,8 @@
     "why": "tsx tools/audit.ts",
     "glyphs": "tsx tools/glyphs.ts",
     "events": "tsx tools/events.ts",
-    "film": "bash tools/film.sh"
+    "film": "bash tools/film.sh",
+    "srt": "tsx tools/srt.ts"
   },
   "dependencies": {
     "@remotion/cli": "4.0.546",

@@ -77,6 +77,10 @@ deterministiklik içerik düzeyindedir.
   (atak 40 ms, bırakış 300 ms); konuşmanın ortasına düşen efektler tek tek geri çekilir; doruk an (dış sessiz) konuşma
   seviyesinde. Sonuç: −18,9 LUFS, gerçek tepe −1,1 dBTP, clipping yok, konuşmanın gövdesinde efektler ~5 dB altta.
   **Aşırı korumacı miks efektleri yok eder** (ilk iki denemede efektler "zayıf" bulundu).
+- Uzun kayıtlardan (dökülme, köpürme dokusu) bölüm seçmek için olay `crop.start_s` + `len_ms` alır (atak aranmaz,
+  iki uca yumuşak geçiş) ve `align: 'start'` ile başı kareye oturtulur. Kayıt referanstan sessizse `master_db` ile
+  yalnızca sabit ana kazanç verilir (dış ses / efekt oranı değişmez; tepe −1 dBFS sınırı korunur). Denge ölçüyle
+  kurulur: efekt veriyolunun entegre ses yüksekliği dış sesin ~12 LU altında (Kavurma ve Kola + V60).
 - Kütüphane: `audio/library/` (yalnızca CC0, kaynak/commit kaydı `sources.json`). Kenney ve Freesound gibi sitelere
   ağ erişimi yoksa Kenney CC0 paketlerinin özgün lisans dosyalı GitHub aynaları kullanılabilir. Mixkit/Pixabay CC0
   değildir: filmde kullanılabilir, depoya girmez.

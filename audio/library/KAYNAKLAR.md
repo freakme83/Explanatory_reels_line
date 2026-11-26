@@ -10,6 +10,7 @@ Ayrıntılı kaynak/commit kaydı: `sources.json`. Lisans metinleri her alt klas
 | `kenney-interface-sounds/` | Interface Sounds 1.0 | Kenney | GitHub aynası Calinou/kenney-interface-sounds (Kenney'in özgün lisans dosyasıyla) |
 | `kenney-rpg-audio/` | RPG Audio | Kenney | GitHub aynası Boyquotes/kenney-rpg-audio-for-godot |
 | `meta-nylon-guitar/` | Meta Nylon Guitar | Meta Creative Audio | facebookincubator/Meta-open-sound |
+| `freesound-cc0/` | Freesound tekil kayıtlar (CC0) | aşağıda | freesound.org HQ önizleme MP3 (lisans her sayfada doğrulandı, Kasım 2026) |
 
 Not: kenney.nl, Freesound, Mixkit ve Pixabay üretim ortamının ağından erişilemedi; Kenney paketleri özgün lisans
 dosyalarını taşıyan GitHub aynalarından alındı. Mixkit (CC0 değil, kendi lisansı) bu yüzden kullanılmadı.
@@ -29,3 +30,11 @@ dosyalarını taşıyan GitHub aynalarından alındı. Mixkit (CC0 değil, kendi
 | Nylon G3→D4 | Hacim artışı: yükselen iki nota |
 | Nylon D5 / G4 / B3 | Tat kelimeleri: meyvemsi (parlak) → karamelimsi → acımsı (pes) |
 | Nylon G3 + B3 + D4 | Kapanış: dış ses bittikten sonra yumuşak çözülüş |
+
+## freesound-cc0/ (her biri CC0 1.0)
+| Dosya | Kayıt | Yazar | Sayfa | Kola + V60'taki görevi |
+|---|---|---|---|---|
+| fs_245643_unfa.mp3 | Cola Into Glass | unfa | freesound.org/s/245643 | Açılış dökülmesi; köpürme dokusu (5–20 sn) |
+| fs_517176_craigglenday.mp3 | Pouring a fizzy drink | craigglenday | freesound.org/s/517176 | Klip dökülmeleri |
+| fs_234620_squashy555.mp3 | pouring fizzy drink | squashy555 | freesound.org/s/234620 | Klip dökülmesi |
+| fs_187336_baidonovan.mp3 | Fizzing Carbonated Beverage | baidonovan | freesound.org/s/187336 | Yakın köpük; otobüs kapısının tıslaması |

@@ -20,6 +20,7 @@ export const palette = {
   aroma: ['#A4612F', '#C07A3A', '#8A4B27', '#B8863F'],
   seat: '#C3DDEA', // açılışın buz mavisi: serinin bağı
   particle: '#5F3C25',
+  coldCola: '#DCDDD3', // soğuk kola: aynı kâğıt, buz mavisine doğru bir adım
 } as const;
 
 /** Kare-saf titreşim: aynı kare → aynı konum. */

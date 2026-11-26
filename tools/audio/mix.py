@@ -47,7 +47,14 @@ def tail(x, rel_db=-30):
 
 
 def crop(x, c):
-    """Kayıttan tek olay seç: atak öncesi pre_ms, toplam len_ms, sonda fade_ms; isteğe bağlı yüksek geçiren ve yumuşak doygunluk."""
+    """Kayıttan tek olay seç: atak öncesi pre_ms, toplam len_ms, sonda fade_ms; isteğe bağlı yüksek geçiren ve yumuşak doygunluk.
+    `start_s` verilirse atak aranmaz: kaydın o saniyesinden len_ms uzunluğunda bir bölüm alınır (doku/dökülme gibi uzun sesler),
+    iki ucuna fade_ms yumuşak geçiş uygulanır."""
+    if 'start_s' in c:
+        a = int(c['start_s'] * SR); seg = x[a:a + int(c['len_ms'] / 1000 * SR)].copy()
+        f = min(len(seg) // 2, int(c.get('fade_ms', 200) / 1000 * SR)); r = np.linspace(0, 1, f)
+        seg[:f] *= r; seg[-f:] *= r[::-1]
+        return hp(seg, c.get('hp_hz', 40)) / (np.abs(seg).max() + 1e-12)
     on = onset(x, -30)
     a = max(0, on - int(c.get('pre_ms', 3) / 1000 * SR)); b = on + int(c['len_ms'] / 1000 * SR)
     seg = x[a:b].copy()
@@ -97,7 +104,7 @@ def main(film):
         if e.get('reverse'):
             x = x[::-1].copy(); fl = int(0.01 * SR); x[:fl] *= np.linspace(0, 1, fl)
         x = x * db(e['gain_db']); at = f2s(e['frame'])
-        ref = tail(x) if e.get('align') == 'end' else onset(x)
+        ref = tail(x) if e.get('align') == 'end' else 0 if e.get('align') == 'start' else onset(x)
         place(s, x, at - ref); log.append((e['id'], e['frame'], (at - ref + ref) / SR * fps))
 
     # ducking: yalnızca efekt veriyolu
@@ -110,6 +117,8 @@ def main(film):
         cur += (v - cur) * (up if v > cur else dn); g[i] = cur
     s = s * (1 - (1 - db(-d.get('db', 2.5))) * np.interp(np.arange(N), np.arange(len(g)) * hop, g))
 
+    # isteğe bağlı sabit ana kazanç (dış ses ile efektlerin oranı değişmez; kayıt sessizse yayın seviyesine yaklaştırır)
+    g0 = db(ev.get('master_db', 0.0)); vo = vo * g0; s = s * g0
     m = vo + s; pk = 20 * np.log10(np.abs(m).max() + 1e-12)
     if pk > -1.0:
         raise SystemExit(f'miks tepe {pk:.2f} dBFS (> −1): efekt seviyelerini düşürün')
