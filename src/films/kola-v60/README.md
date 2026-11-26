@@ -7,7 +7,8 @@ neden yine de beğenilir. 1080×1920, 30 fps, ~63,8 sn (1915 kare), Türkçe dı
 ## Kurgu
 Gerçek görüntü (viral kolalı V60 videoları, ağır çekim) → "Arkasındaki bilim": mürekkep V60'ı izler, fotoğraf kâğıda
 döner → çizilmiş yatak köpürür → tek kabarcığın içine dalış → tek kahve parçacığı: koladaki gaz pürüzlü çukurlarda
-kabarcık olur; kavurmadan kalan gaz hücrelerden çıkar (Kavurma'ya bağ) → parçacık çekilir, kola şekerle dolar
+kabarcık olur → "kavurmadan kalan gaz": parçacığın içine dalış, Kavurma'daki petek hücreler yakından; gaz cepleri
+şişer, çatlaklardan kolaya kaçar; geri çıkış → parçacık çekilir, kola şekerle dolar
 (**118 g** · şeker · 1 litre kolada) → **dolu otobüs**: koltuklar dolar, kapı kahve aromasının yüzüne kapanır, sessizlik,
 **"Kalır."**, koltuklar suya erir → fark: kahveye özgü bileşikler bol akar, kafein seyrek (kolada zaten var); "soğuk ve
 şekerli" ile her şey yavaşlar → sıcak su / kola yan yana → refraktometre şekeri de sayıp saçma bir değere tırmanır →
@@ -29,6 +30,8 @@ sahneler · `molecules.tsx` molekül dili · `ses.ts` ses olayları.
 ## Depoda olmayan girdiler (yeniden üretmek için)
 - **Dış ses** `audio/vo/kola-v60.mp3`: ElevenLabs, kullanıcının kendi ses klonu (eleven_v4; iki çekimden ilki).
   Kişisel ses klonu olduğu için depoya girmez. Metin: `recording.ts → REC.sentences` (sırayla).
+  s07 ("Üstelik bir de kavurmadan kalan gaz var.") kullanıcı tarafından aynı sesle yeniden seslendirildi:
+  `audio/vo/kola-v60-s07.mp3` (vurgu Türkçeye uygun olsun diye); `recording.ts → ALT_S07`, klip `N`.
 - **Görüntü** `public/external/kola-v60/`: üçüncü taraf videolardan kırpılmış klipler; depoya girmez.
   Kaynak tek bir ekran kaydı (996×1770, 60 fps). Instagram arayüzü ve Rusça altyazılar kırpıldı; ağır çekim 0,4–0,6×.
 

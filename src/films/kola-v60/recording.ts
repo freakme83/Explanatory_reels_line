@@ -21,7 +21,7 @@ export const REC = {
     s04: {start: 9.04, end: 10.88, text: 'Kahve neden heyecanlı görünüyor?'},
     s05: {start: 11.36, end: 14.64, text: 'Kolanın gazı kabarcık olmak için pürüzlü bir yüzey arar.'},
     s06: {start: 15.04, end: 17.52, text: 'Öğütülmüş kahvenin yüzeyi bunun için ideal.'},
-    s07: {start: 17.84, end: 20.08, text: 'Üstüne bir de kavurmadan kalan gaz var.'},
+    s07: {start: 17.84, end: 20.08, text: 'Üstelik bir de kavurmadan kalan gaz var.'}, // filmde ALT_S07 kullanılır
     s08: {start: 20.48, end: 24.16, text: 'Bir litre vanilyalı kolada yaklaşık 118 gram şeker var.'},
     s09: {start: 24.48, end: 26.72, text: 'Bu kalabalıkta kahveye yer kalır mı?'},
     s10: {start: 26.96, end: 27.36, text: 'Kalır.'},
@@ -48,7 +48,6 @@ export const REC = {
     puruzlu: 13.36,
     ogutulmus: 15.04,
     ideal: 17.04,
-    kavurmadan: 18.64,
     bir118: 20.48,
     yaklasik: 22.0,
     seker118: 23.52,
@@ -84,18 +83,36 @@ export const REC = {
 } as const;
 
 /**
+ * s07 yeniden seslendirildi (kullanıcının kendi çekimi; vurgu Türkçeye uygun): ayrı dosya, aynı ses.
+ * Kelime anları: konuşma bloğu 0,07–2,75 sn; "kavurmadan" hece oranından tahmin (±0,1 sn, yalnızca görsel olay için).
+ */
+export const ALT_S07 = {
+  file: 'audio/vo/kola-v60-s07.mp3',
+  start: 0.07,
+  end: 2.75,
+  text: 'Üstelik bir de kavurmadan kalan gaz var.',
+  words: {ustelik: 0.07, kavurmadan: 1.1},
+} as const;
+
+/**
  * Klipler: kayıttan [rec0, rec1) aralığı, filmde `at` karesinden başlar.
  * Kesimler duraklamaların ortasındadır; eklenen sessizlikler anlatı içindir.
  */
 export const CLIPS = [
   {id: 'A', rec: [0.0, 11.05], at: 0, why: 'Gerçek görüntü + çizime geçiş; "heyecanlı" köpüren yatakla.'},
-  {id: 'B', rec: [11.05, 26.85], at: 344, why: '+0,4 sn: kabarcığın içine dalış. "pürüzlü" çukurlarda kabarcık, "118" şeker kalabalığı, "kalır mı" kapı.'},
+  {id: 'B1', rec: [11.05, 17.68], at: 334, why: 'Dalışın son anında başlar; "pürüzlü" çukurlarda kabarcık, "ideal" ile hepsi.'},
+  {id: 'N', file: ALT_S07.file, rec: [0.0, 2.9], at: 535, why: 'Yeniden seslendirilen s07; iki yanında ~0,3 sn doğal duraklama.'},
+  {id: 'B3', rec: [20.25, 26.85], at: 620, why: '"118" şeker kalabalığı, "kalır mı" kapı (eski yerinde; Sahne 3–4 değişmez).'},
   {id: 'C', rec: [26.85, 55.75], at: 829, why: '+0,4 sn sessizlik: kapı kapanır, "Kalır." gelir (Sahne 4 cevap karesi).'},
   {id: 'D', rec: [55.75, 60.92], at: 1705, why: '+0,3 sn: gerçek tadım görüntüsüne dönüş.'},
 ] as const;
 
 /** Kayıttaki bir zamanı (sn) filmdeki kareye çevirir. */
 export const recToFilm = (t: number) => {
-  const c = CLIPS.find((k) => t >= k.rec[0] && t < k.rec[1]) ?? CLIPS[CLIPS.length - 1];
+  const main = CLIPS.filter((k) => !('file' in k));
+  const c = main.find((k) => t >= k.rec[0] && t < k.rec[1]) ?? main[main.length - 1];
   return Math.round(c.at + (t - c.rec[0]) * 30);
 };
+
+/** Yeniden seslendirilen s07 dosyasındaki bir zamanı filmdeki kareye çevirir. */
+export const altToFilm = (t: number) => Math.round(535 + t * 30);

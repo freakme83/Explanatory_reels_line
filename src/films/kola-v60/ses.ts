@@ -46,7 +46,9 @@ PITS.forEach((k, i) => {
 });
 detach.sort((a, b) => a - b);
 // çok sık düşenleri seyrelt: en az 7 kare arayla
-const plips = detach.filter((f, i, a) => i === 0 || f - a[i - 1] >= 7).slice(0, 26);
+const cz = B.cells;
+// hücre sahnesi açıkken çukurlar görünmez: o aralıktaki kopmalar çalınmaz
+const plips = detach.filter((f) => f < cz.in || f > cz.end).filter((f, i, a) => i === 0 || f - a[i - 1] >= 7).slice(0, 26);
 
 /* Refraktometre: sayı tırmanırken hızlanan tıkırtılar. */
 const ticks: number[] = [];
@@ -72,7 +74,11 @@ const sfx: Ev[] = [
   /* ---- Sahne 2: tek parçacık, kabarcıklar ---- */
   {id: 'kola-ici', file: COLA, frame: v.diveEnd - 4, gain_db: -30, align: 'start', crop: {start_s: 9.0, len_ms: 9000, fade_ms: 1200}, why: 'Kolanın içi: uzak, yumuşak köpürme'},
   ...plips.map((f, i): Ev => ({id: `kopma-${i + 1}`, file: ui(i % 2 ? 'drop_003' : 'drop_002'), frame: f, gain_db: -25, rate: 0.95 + rand(`kp${i}`) * 0.55, why: 'Kabarcık çukurdan kopar'})),
-  ...[0, 14, 25, 41, 52].map((dd, i): Ev => ({id: `ic-gaz-${i + 1}`, file: ui('drop_004'), frame: p.kavurmadan + 34 + dd, gain_db: -24, rate: 0.62 + i * 0.03, why: 'Kavurmadan kalan gaz: içeriden çıkan, daha pes kabarcıklar'})),
+  /* ---- Sahne 2b: parçacığın içi, kavurmadan kalan gaz ---- */
+  {id: 'iceri-dalis', file: rpg('cloth_2'), frame: cz.in + 2, gain_db: -16, rate: 0.85, why: 'Parçacığın içine dalış'},
+  ...[0, 7, 13, 20].map((dd, i): Ev => ({id: `cep-${i + 1}`, file: ui('drop_004'), frame: cz.full + 2 + dd, gain_db: -23, rate: 0.55 + i * 0.04, why: 'Hücrelerdeki gaz cepleri şişer: boğuk, pes'})),
+  ...[0, 6, 11, 17, 22, 28, 33].map((dd, i): Ev => ({id: `kacis-${i + 1}`, file: ui(i % 2 ? 'drop_003' : 'drop_002'), frame: p.kavurmadan + 2 + dd, gain_db: -25, rate: 1.05 + rand(`kc${i}`) * 0.4, why: 'Gaz çatlaklardan kolaya kaçar: kabarcık zinciri'})),
+  {id: 'disari-cikis', file: rpg('cloth_2'), frame: cz.end, gain_db: -17, reverse: true, align: 'end', rate: 0.95, why: 'Parçacığa geri çıkış'},
   /* ---- Sahne 3: şeker kalabalığı ---- */
   {id: 'parcacik-cekilir', file: rpg('cloth_3'), frame: p.exit + 2, gain_db: -17, rate: 0.8, why: 'Parçacık kadrajdan çekilir'},
   ...Array.from({length: 11}, (_, i): Ev => ({id: `seker-${i + 1}`, file: ui(i % 2 ? 'select_002' : 'click_005'), frame: Math.round(p.exit + 14 + (i / 10) * (p.seker - p.exit - 6)), gain_db: -26, rate: 1.1 + (i % 4) * 0.08, why: 'Şeker molekülleri birer birer belirir: kalabalık'})),
@@ -130,7 +136,7 @@ export default {
   /** Kayıt referanstan ~3 dB sessiz: yalnızca sabit ana kazanç (tepe −1 dBFS altında kalır). */
   master_db: 0.4,
   totalFrames: B.total,
-  voice: {file: 'audio/vo/kola-v60.mp3', clips: CLIPS.map((c) => ({id: c.id, rec: c.rec, atFrame: c.at}))},
+  voice: {file: 'audio/vo/kola-v60.mp3', clips: CLIPS.map((c) => ({id: c.id, rec: c.rec, atFrame: c.at, ...('file' in c ? {file: c.file} : {})}))},
   textures: [],
   duck: {db: 2.5, threshold_db: -42, attack_s: 0.04, release_s: 0.3},
   sfx,

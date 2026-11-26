@@ -83,8 +83,13 @@ def main(film):
     # dış ses
     vo = np.zeros(N)
     if ev.get('voice'):
-        src = decode(os.path.join(ROOT, ev['voice']['file'])); fade = int(0.015 * SR); ramp = np.linspace(0, 1, fade)
+        cache = {}; fade = int(0.015 * SR); ramp = np.linspace(0, 1, fade)
         for c in ev['voice']['clips']:
+            # klip kendi dosyasını taşıyabilir (yeniden seslendirilen tek cümle gibi); yoksa ana kayıt
+            fn = c.get('file', ev['voice']['file'])
+            if fn not in cache:
+                cache[fn] = decode(os.path.join(ROOT, fn))
+            src = cache[fn]
             seg = src[int(round(c['rec'][0] * SR)):int(round(c['rec'][1] * SR))].copy()
             if c['rec'][0] > 0:
                 seg[:fade] *= ramp

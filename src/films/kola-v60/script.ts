@@ -6,7 +6,7 @@
  */
 import type {Cue, FilmSpec, Voice} from '../../system/principles';
 import {textSpan} from '../../system/timing';
-import {REC, recToFilm} from './recording';
+import {ALT_S07, REC, altToFilm, recToFilm} from './recording';
 
 const at = (id: keyof typeof REC.words) => recToFilm(REC.words[id]);
 
@@ -46,7 +46,9 @@ export const B = {
   total,
   open,
   v60: {start: open.clips[5], draw: at('bilim'), wipe: at('bilim') + 16, foam: at('heyecanli'), dive: at('heyecanli') + 30, diveEnd: at('heyecanli') + 62},
-  particle: {start: at('heyecanli') + 30, puruzlu: at('puruzlu'), ideal: at('ideal'), kavurmadan: at('kavurmadan'), exit: s3, seker: at('seker118'), end: s4},
+  particle: {start: at('heyecanli') + 30, puruzlu: at('puruzlu'), ideal: at('ideal'), kavurmadan: altToFilm(ALT_S07.words.kavurmadan), exit: s3, seker: at('seker118'), end: s4},
+  /** "Üstüne bir de kavurmadan kalan gaz var.": parçacığın içine dalış, hücreler yakından; cümle bitince geri çıkış. */
+  cells: {in: altToFilm(ALT_S07.words.ustelik) - 12, full: altToFilm(ALT_S07.words.ustelik) + 4, out: s3 - 22, end: s3 - 6},
   sugarFig,
   bus: {start: s4, end: s5},
   diff: {start: s5, kafTag: at('kolada'), slowFrom: at('soguk'), slowTo: at('yavas'), end: s6},
@@ -62,7 +64,9 @@ if (Math.abs(B.bus.start + ANSWER - at('kalir')) > 1) throw new Error(`"Kalır."
 
 /* ---------------- Dış ses: gerçek kayıttan ---------------- */
 
-export const voice: Voice[] = Object.entries(REC.sentences).map(([id, s]) => ({id, in: recToFilm(s.start), out: recToFilm(s.end), text: s.text}));
+export const voice: Voice[] = Object.entries(REC.sentences).map(([id, s]) =>
+  id === 's07' ? {id, in: altToFilm(ALT_S07.start), out: altToFilm(ALT_S07.end), text: ALT_S07.text} : {id, in: recToFilm(s.start), out: recToFilm(s.end), text: s.text},
+);
 export const voiceIsRecording = true;
 
 /* ---------------- İşaret listesi ---------------- */
@@ -86,8 +90,10 @@ export const cues: Cue[] = [
     purpose: 'Kahraman: tek öğütülmüş kahve parçacığı; Kavurma\'daki petek hücreleri içinde.'},
   {id: 'nucleation', kind: 'data', idea: 'köpük', in: v.diveEnd, landed: p.puruzlu, out: p.exit,
     purpose: 'Koladaki çözünmüş gaz pürüzlü çukurlara toplanır, kabarcık olup kopar; "ideal" ile çukurların hepsi çalışır.'},
+  {id: 'cells', kind: 'illustration', idea: 'köpük', in: B.cells.in, landed: B.cells.full, out: B.cells.end,
+    purpose: 'Ayrı sahne: parçacığın içi, Kavurma\'daki petek hücreler. Hücrelerdeki gaz cepleri şişer, çatlaklardan kolaya kaçar.'},
   {id: 'roast-gas', kind: 'data', idea: 'köpük', in: p.kavurmadan, landed: p.kavurmadan + 20, out: p.exit,
-    purpose: 'İkinci kaynak: kavurmadan hücrelerde kalan gaz içeriden çıkar (serinin bağı).'},
+    purpose: 'İkinci kaynak: kavurmadan hücrelerde kalan gaz içeriden çıkar (serinin bağı); geri çıkınca yüzeyden kabarcıklar.'},
   {id: 'crowd', kind: 'illustration', idea: 'şeker', in: p.exit, landed: p.exit + 50, out: s4,
     purpose: 'Parçacık çekilir, kola şeker molekülleriyle dolar: kalabalık hissi.'},
   {id: 'sugar-figure', kind: 'figure', idea: 'şeker', ...sugarFig, text: copy.sugar.figure,

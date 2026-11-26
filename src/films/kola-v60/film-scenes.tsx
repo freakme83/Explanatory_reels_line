@@ -569,3 +569,108 @@ export const FinalFootage: React.FC<{from: number}> = ({from}) => {
     </AbsoluteFill>
   );
 };
+
+/* ================= Sahne 2b · parçacığın içi: kavurmadan kalan gaz ================= */
+
+/** Parçacığa dalış/çıkış: kâğıt parçacık sahnesi bu noktaya doğru büyür, hücre sahnesi buradan açılır. */
+export const CELLS_AT: P = [560, 1060];
+export const cellsIris = (F: number) => {
+  const c = B.cells;
+  const open = prog(F, c.in, c.full - c.in, ease.zoom);
+  const close = prog(F, c.out, c.end - c.out, ease.zoom);
+  const k = open * (1 - close);
+  return {r: 2300 * k, k, on: F >= c.in && F < c.end};
+};
+
+/** Yüzeyin (kola ile parçacık arasındaki sınırın) yüksekliği; üç noktada aşağı inen dar bir çatlak. */
+const CRACKS = [230, 580, 880];
+const surfaceY = (x: number) => {
+  let y = 900 + Math.sin(x * 0.012) * 34 + Math.sin(x * 0.031 + 1) * 16;
+  for (const cx of CRACKS) y += 300 * Math.exp(-Math.pow((x - cx) / 30, 2));
+  return y;
+};
+const SURF: P[] = Array.from({length: 109}, (_, i) => [-20 + i * 10.4, surfaceY(-20 + i * 10.4)]);
+const TISSUE = smoothClosed([...SURF, [1120, 2000], [-40, 2000]] as P[], 0.6);
+const BIG_CELLS = (() => {
+  const out: {d: string; x: number; y: number; r: number; seed: string}[] = [];
+  const R = 118;
+  const w = Math.sqrt(3) * R;
+  const h = 1.5 * R;
+  for (let row = 0; row * h < 1200; row++)
+    for (let col = -1; col * w < 1180; col++) {
+      const seed = `bc${row}-${col}`;
+      const x = col * w + (row % 2 ? w / 2 : 0) + (rand(seed + 'x') - 0.5) * 22;
+      const y = 860 + row * h + (rand(seed + 'y') - 0.5) * 22;
+      out.push({d: smoothClosed(blob(x, y, R * 0.82, seed, 0.12, 10)), x, y, r: R * 0.82, seed});
+    }
+  return out;
+})();
+
+export const SceneCells: React.FC<{from: number}> = ({from}) => {
+  const F = useF(from);
+  const c = B.cells;
+  const p = B.particle;
+  const push = lerp(1, 1.14, prog(F, c.in, c.end - c.in, ease.time));
+  const drift = prog(F, c.in, c.end - c.in, ease.time) * -40;
+  const wall = mix(palette.particle, color.ink, 0.38);
+  // gaz cepleri: yüzeye yakın hücrelerden başlayarak şişer
+  const pockets = BIG_CELLS.filter((b) => b.y > surfaceY(b.x) + 60).map((b) => {
+    const st = c.full - 6 + (b.y - 900) / 1000 * 26 + rand(b.seed + 'g') * 10;
+    const g = smoothstep(st, st + 22, F);
+    const breathe = 1 + Math.sin(F * 0.16 + rand(b.seed) * 6) * 0.05 * g;
+    return {b, g, breathe};
+  });
+  // kaçış: her çatlaktan, kolaya doğru yükselen kabarcık zinciri
+  const escapes: {x: number; y: number; r: number}[] = [];
+  // çatlaklara ek olarak yüzeyin başka noktalarından da sızıntı (hücre duvarlarındaki gözenekler)
+  const vents = [...CRACKS, 90, 400, 720, 1000];
+  vents.forEach((cx, j) => {
+    const crack = j < CRACKS.length;
+    const per = crack ? 6 + j : 13 + (j % 3) * 3;
+    const start = (crack ? c.full + 2 : p.kavurmadan) + j * 3;
+    for (let n = 0; n < 60; n++) {
+      const birth = start + n * per + rand(`eb${j}${n}`) * 4;
+      const age = F - birth;
+      if (age < 0 || age > 110) continue;
+      const y0 = surfaceY(cx) + (crack ? 120 : 6);
+      const y = y0 - Math.pow(age, 1.4) * 3.2;
+      const inCrack = y > surfaceY(cx) - 30;
+      const x = cx + (inCrack ? Math.sin(age * 0.5 + n) * 4 : Math.sin(age * 0.2 + n) * 14 * Math.min(1, (surfaceY(cx) - y) / 120));
+      const r = inCrack ? 13 : lerp(13, 30 + rand(`er${j}${n}`) * 14, smoothstep(0, 200, surfaceY(cx) - y));
+      if (y > -40) escapes.push({x, y, r});
+    }
+  });
+  return (
+    <AbsoluteFill style={{background: palette.cola, overflow: 'hidden'}}>
+      <svg width={W} height={H} style={{position: 'absolute', inset: 0}}>
+        <g transform={`translate(0 ${drift}) translate(540 960) scale(${push}) translate(-540 -960)`}>
+          <WaterField frame={F - B.bus.start} w={W} h={1100} count={620} seed="cellsw" />
+          <path d={TISSUE} fill={wall} transform={`translate(${misregister.x} ${misregister.y})`} opacity={0.5} />
+          <defs>
+            <clipPath id="tissue">
+              <path d={TISSUE} />
+            </clipPath>
+          </defs>
+          <g clipPath="url(#tissue)">
+            <rect x={-40} y={600} width={W + 80} height={1500} fill={wall} />
+            {BIG_CELLS.map((b, i) => (
+              <path key={i} d={b.d} fill={palette.particle} />
+            ))}
+            {pockets.map(({b, g, breathe}, i) =>
+              g > 0.01 ? (
+                <path key={i} d={smoothClosed(blob(b.x, b.y, b.r * 0.58 * g * breathe, b.seed + 'p', 0.16, 8))} fill="#BFD8E4" stroke={color.ink} strokeWidth={2.6} />
+              ) : null,
+            )}
+          </g>
+          <path d={smoothOpen(SURF)} fill="none" stroke={color.ink} strokeWidth={6} strokeLinejoin="round" />
+          {escapes.map((e, i) => (
+            <g key={i}>
+              <circle cx={e.x} cy={e.y} r={e.r} fill="#E2EEF3" stroke={color.ink} strokeWidth={2.6} />
+              {e.r > 14 ? <path d={`M ${e.x - e.r * 0.55} ${e.y - e.r * 0.1} A ${e.r * 0.6} ${e.r * 0.6} 0 0 1 ${e.x - e.r * 0.05} ${e.y - e.r * 0.58}`} fill="none" stroke="#FFFFFF" strokeWidth={3} strokeLinecap="round" /> : null}
+            </g>
+          ))}
+        </g>
+      </svg>
+    </AbsoluteFill>
+  );
+};

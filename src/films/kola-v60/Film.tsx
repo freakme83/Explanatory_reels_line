@@ -5,7 +5,7 @@ import React from 'react';
 import {AbsoluteFill, Sequence, useCurrentFrame} from 'remotion';
 import {margin, type} from '../../system/tokens';
 import {Fade, Line, Lines} from '../../system/type';
-import {FinalFootage, OpeningFootage, SceneCompare, SceneParticle, SceneRefractometer, SceneTaste, SceneV60, diveIris} from './film-scenes';
+import {CELLS_AT, FinalFootage, OpeningFootage, SceneCells, SceneCompare, SceneParticle, SceneRefractometer, SceneTaste, SceneV60, cellsIris, diveIris} from './film-scenes';
 import {SceneBus, SceneGradient} from './scenes';
 import {B, copy} from './script';
 
@@ -18,6 +18,8 @@ const Seq: React.FC<{from: number; to: number; children: React.ReactNode}> = ({f
 export const KolaV60Film: React.FC = () => {
   const f = useCurrentFrame();
   const iris = diveIris(f);
+  const ci = cellsIris(f);
+  const zoomP = 1 + 1.8 * ci.k; // parçacığın içine dalarken kâğıt sahne de o noktaya doğru büyür
   const d = B.diff;
   return (
     <AbsoluteFill>
@@ -29,7 +31,14 @@ export const KolaV60Film: React.FC = () => {
       </Seq>
       <Seq from={B.particle.start} to={B.bus.start}>
         <AbsoluteFill style={iris.done ? undefined : {clipPath: `circle(${iris.r.toFixed(1)}px at ${iris.at[0]}px ${iris.at[1]}px)`}}>
-          <SceneParticle from={B.particle.start} />
+          <AbsoluteFill style={{transform: `scale(${zoomP})`, transformOrigin: `${CELLS_AT[0]}px ${CELLS_AT[1]}px`}}>
+            <SceneParticle from={B.particle.start} />
+          </AbsoluteFill>
+        </AbsoluteFill>
+      </Seq>
+      <Seq from={B.cells.in} to={B.cells.end}>
+        <AbsoluteFill style={{clipPath: `circle(${ci.r.toFixed(1)}px at ${CELLS_AT[0]}px ${CELLS_AT[1]}px)`}}>
+          <SceneCells from={B.cells.in} />
         </AbsoluteFill>
       </Seq>
       <Seq from={B.bus.start} to={B.bus.end}>
